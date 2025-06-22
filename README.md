@@ -107,6 +107,20 @@ See the [examples/](./examples/) directory for more use cases:
 | --------------- | --------------------------------------------- |
 | `submitScore()` | Attach qualitative feedback to the generation |
 
+### Time Fields
+
+All time fields (`startTime`, `endTime`, `timestamp`, etc.) must be provided as **Unix timestamps**.
+
+Example usage:
+
+```typescript
+const span = trace.addSpan({
+  name: 'work',
+  startTime: Date.now(),
+  endTime: Date.now() + 500,
+});
+```
+
 ---
 
 ## TypeScript Types
