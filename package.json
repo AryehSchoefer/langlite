@@ -1,6 +1,6 @@
 {
   "name": "langlite",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A lightweight, type-safe TypeScript SDK for observability and tracing in LLM and AI-powered applications. Batch, export, and analyze traces, generations, spans, events, and scores with ease in Node.js or browser environments.",
   "keywords": [
     "observability",
