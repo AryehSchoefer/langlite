@@ -77,10 +77,10 @@ export class LangliteTrace {
     this.scores.push(args);
   }
 
-  finish(): void {
+  async finish(): Promise<void> {
     this.finished = true;
     if (this.langliteInstance) {
-      this.langliteInstance._flushTrace(this);
+      await this.langliteInstance._flushTrace(this);
     }
   }
 
@@ -220,7 +220,7 @@ export class LangliteSpan {
 
 type QueuedTrace = {
   trace: LangliteTrace;
-  // may want to add timestamps, status, etc.
+  retries: number;
 };
 
 async function postJson(
@@ -238,10 +238,15 @@ async function postJson(
   });
 }
 
+const MAX_EXPORT_RETRIES = 5;
+const BASE_BACKOFF_MS = 1000;
+const MAX_BACKOFF_MS = 30_000;
+
 export class Langlite {
   private config: LangliteConfig;
   private traceQueue: QueuedTrace[] = [];
   private flushTimer: ReturnType<typeof setInterval> | null = null;
+  private retryTimeouts: NodeJS.Timeout[] = [];
 
   constructor(config: LangliteConfig) {
     if (!config.secretKey) {
@@ -264,8 +269,7 @@ export class Langlite {
 
   startTrace(args: TraceArgs): LangliteTrace {
     const trace = new LangliteTrace(args, this);
-    this.traceQueue.push({ trace });
-
+    this.traceQueue.push({ trace, retries: 0 });
     return trace;
   }
 
@@ -280,6 +284,7 @@ export class Langlite {
   async flush(): Promise<void> {
     if (this.traceQueue.length === 0) return;
     const traces = this.traceQueue.map((qt) => qt.trace.toJSON());
+    const batch = this.traceQueue.slice();
     this.traceQueue = [];
     try {
       await postJson(
@@ -288,16 +293,8 @@ export class Langlite {
         this.config.secretKey,
       );
     } catch (e) {
-      console.error('Error exporting traces:', e);
+      this.handleExportError('batch', e, traces, batch);
     }
-  }
-
-  async shutdown(): Promise<void> {
-    if (this.flushTimer) {
-      clearInterval(this.flushTimer);
-      this.flushTimer = null;
-    }
-    await this.flush();
   }
 
   async _flushTrace(trace: LangliteTrace): Promise<void> {
@@ -307,9 +304,71 @@ export class Langlite {
         trace.toJSON(),
         this.config.secretKey,
       );
+      this.traceQueue = this.traceQueue.filter((qt) => qt.trace !== trace);
     } catch (e) {
-      console.error('Error exporting trace:', e);
+      let queued = this.traceQueue.find((qt) => qt.trace === trace);
+      if (!queued) {
+        queued = { trace, retries: 0 };
+        this.traceQueue.push(queued);
+      }
+      this.handleExportError('single', e, trace.toJSON(), [queued]);
     }
-    this.traceQueue = this.traceQueue.filter((qt) => qt.trace !== trace);
+  }
+
+  async shutdown(): Promise<void> {
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer);
+      this.flushTimer = null;
+    }
+    this.retryTimeouts.forEach((timeout) => clearTimeout(timeout));
+    this.retryTimeouts = [];
+    await this.flush();
+  }
+
+  private handleExportError(
+    exportType: 'batch' | 'single',
+    error: unknown,
+    data: any,
+    failedQueuedTraces: QueuedTrace[],
+  ) {
+    // could plug in logger here, or emit events
+    if (typeof console !== 'undefined' && console.error) {
+      console.error(
+        `[Langlite] Error exporting traces (${exportType}):`,
+        error,
+        '\nData:',
+        data,
+      );
+    }
+    for (const qt of failedQueuedTraces) {
+      if (qt.retries < MAX_EXPORT_RETRIES) {
+        qt.retries++;
+        const backoff = Math.min(
+          BASE_BACKOFF_MS * Math.pow(2, qt.retries - 1),
+          MAX_BACKOFF_MS,
+        );
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn(
+            `[Langlite] Retrying trace (id=${qt.trace.id}, attempt=${qt.retries}) in ${backoff}ms`,
+          );
+        }
+        this.traceQueue = this.traceQueue.filter(
+          (item) => item.trace !== qt.trace,
+        );
+        const timeout = setTimeout(() => {
+          this._flushTrace(qt.trace);
+          this.retryTimeouts = this.retryTimeouts.filter((t) => t !== timeout);
+        }, backoff);
+        this.retryTimeouts.push(timeout);
+        this.traceQueue.push(qt);
+      } else {
+        if (typeof console !== 'undefined' && console.error) {
+          console.error(
+            `[Langlite] Trace (id=${qt.trace.id}) dropped after ${MAX_EXPORT_RETRIES} retries.`,
+          );
+        }
+        // maybe: emit an event, store in a dead-letter queue, etc.
+      }
+    }
   }
 }
