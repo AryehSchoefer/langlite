@@ -69,7 +69,12 @@ export class LangliteTrace {
 
   logEvent(args: EventArgs): void {
     this.ensureNotFinished();
-    this.events.push(args);
+    const eventWithTimestamp = {
+      ...args,
+      timestamp:
+        typeof args.timestamp === 'number' ? args.timestamp : Date.now(),
+    };
+    this.events.push(eventWithTimestamp);
   }
 
   submitScore(args: ScoreArgs): void {
