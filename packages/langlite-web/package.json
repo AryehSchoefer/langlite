@@ -1,0 +1,54 @@
+{
+  "name": "langlite-web",
+  "version": "0.0.1",
+  "description": "Browser/Edge implementation of the Langlite SDK, built on langlite-core.",
+  "keywords": [
+    "observability",
+    "tracing",
+    "sdk",
+    "typescript",
+    "browser",
+    "web"
+  ],
+  "homepage": "https://github.com/AryehSchoefer/langlite",
+  "bugs": {
+    "url": "https://github.com/AryehSchoefer/langlite/issues"
+  },
+  "author": "AryehSchoefer (https://github.com/AryehSchoefer)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AryehSchoefer/langlite"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/index.js",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "format": "prettier --write .",
+    "lint": "tsc",
+    "dev": "vitest",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "check-format": "prettier --check .",
+    "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+    "prepublishOnly": "npm run build && npm run check-format && npm run lint && npm run test"
+  },
+  "devDependencies": {
+    "@types/langlite-core": "0.0.1"
+  },
+  "dependencies": {
+    "langlite-core": "0.0.1"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
+}
