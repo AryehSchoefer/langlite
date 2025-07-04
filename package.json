@@ -1,6 +1,7 @@
 {
   "name": "langlite",
   "version": "0.0.3",
+  "private": true,
   "description": "A lightweight, type-safe TypeScript SDK for observability and tracing in LLM and AI-powered applications. Batch, export, and analyze traces, generations, spans, events, and scores with ease in Node.js or browser environments.",
   "keywords": [
     "observability",
@@ -37,11 +38,11 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "build": "tsup",
-    "format": "prettier --write .",
-    "lint": "tsc",
+    "build": "npm run build -w langlite-core && npm run build -w langlite-web && npm run build -w langlite-node",
+    "format": "npm run format --workspaces",
+    "lint": "npm run lint --workspaces",
+    "test": "npm run test --workspaces",
     "dev": "vitest",
-    "test": "vitest run",
     "coverage": "vitest run --coverage",
     "check-format": "prettier --check .",
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
@@ -58,12 +59,21 @@
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
+  "dependencies": {
+    "uuid": "^11.1.0"
+  },
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "import": "./dist/index.js",
       "default": "./dist/index.cjs"
     }
-  }
+  },
+  "workspaces": [
+    "./packages/*"
+  ]
 }
