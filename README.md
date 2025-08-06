@@ -142,6 +142,18 @@ All public APIs are strictly typed. See [`src/types.ts`](./src/types.ts) for det
 
 ## Development
 
+**First time setup:**
+
+```sh
+# Install dependencies
+npm install
+
+# Build all packages (required for TypeScript resolution)
+npm run build
+```
+
+**Development workflow:**
+
 - **Formatting:** Uses [Prettier](https://prettier.io/) for code style.
 - **Type-checking:** Uses [TypeScript (`tsc`)](https://www.typescriptlang.org/) for type safety.
 - **Build:** Uses [tsup](https://tsup.egoist.dev/) for fast, modern bundling and dual ESM/CJS output.
@@ -153,13 +165,16 @@ All public APIs are strictly typed. See [`src/types.ts`](./src/types.ts) for det
 npm run format
 
 # Type-check code
-npm run type-check
+npm run lint
 
 # Build (with tsup)
 npm run build
 
 # Test
 npm run test
+
+# Watch mode for tests
+npm run dev
 ```
 
 ---
