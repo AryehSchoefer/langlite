@@ -36,7 +36,6 @@
     "format": "prettier --write .",
     "lint": "tsc",
     "dev": "vitest",
-    "test": "vitest run",
     "coverage": "vitest run --coverage",
     "check-format": "prettier --check .",
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",

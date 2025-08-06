@@ -41,7 +41,7 @@
     "build": "npm run build -w langlite-core && npm run build -w langlite-web && npm run build -w langlite-node",
     "format": "npm run format --workspaces",
     "lint": "npm run lint --workspaces",
-    "test": "npm run test --workspaces",
+    "test": "npm run test --workspaces --if-present",
     "dev": "vitest",
     "coverage": "vitest run --coverage",
     "check-format": "prettier --check .",
