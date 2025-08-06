@@ -28,11 +28,11 @@ async function postJson(
   return response;
 }
 
-const MAX_EXPORT_RETRIES = 5;
-const BASE_BACKOFF_MS = 1000;
-const MAX_BACKOFF_MS = 30_000;
-const BATCH_RETRY_ATTEMPTS = 1;
-const BATCH_RETRY_DELAY_MS = 2000;
+const DEFAULT_MAX_EXPORT_RETRIES = 5;
+const DEFAULT_BASE_BACKOFF_MS = 1000;
+const DEFAULT_MAX_BACKOFF_MS = 30_000;
+const DEFAULT_BATCH_RETRY_ATTEMPTS = 1;
+const DEFAULT_BATCH_RETRY_DELAY_MS = 2000;
 
 export class Langlite {
   private config: LangliteConfig;
@@ -40,6 +40,11 @@ export class Langlite {
   private flushTimer: ReturnType<typeof setInterval> | null = null;
   private retryTimeouts: ReturnType<typeof setTimeout>[] = [];
   private retryingTraceIds: Set<string> = new Set();
+  private maxExportRetries: number;
+  private baseBackoffMs: number;
+  private maxBackoffMs: number;
+  private batchRetryAttempts: number;
+  private batchRetryDelayMs: number;
 
   constructor(config: LangliteConfig) {
     if (!config.secretKey) {
@@ -51,6 +56,16 @@ export class Langlite {
       flushInterval: 10000, // default: 10 seconds
       ...config,
     };
+
+    const retryConfig = this.config.retryConfig || {};
+    this.maxExportRetries =
+      retryConfig.maxRetries ?? DEFAULT_MAX_EXPORT_RETRIES;
+    this.baseBackoffMs = retryConfig.baseBackoffMs ?? DEFAULT_BASE_BACKOFF_MS;
+    this.maxBackoffMs = retryConfig.maxBackoffMs ?? DEFAULT_MAX_BACKOFF_MS;
+    this.batchRetryAttempts =
+      retryConfig.batchRetryAttempts ?? DEFAULT_BATCH_RETRY_ATTEMPTS;
+    this.batchRetryDelayMs =
+      retryConfig.batchRetryDelayMs ?? DEFAULT_BATCH_RETRY_DELAY_MS;
 
     if (this.config.flushInterval && this.config.flushInterval > 0) {
       this.flushTimer = setInterval(
@@ -95,8 +110,8 @@ export class Langlite {
     } catch (e) {
       console.error(`[Langlite] Initial batch export failed. Retrying...`, e);
       let batchSucceeded = false;
-      for (let i = 0; i < BATCH_RETRY_ATTEMPTS; i++) {
-        await new Promise((res) => setTimeout(res, BATCH_RETRY_DELAY_MS));
+      for (let i = 0; i < this.batchRetryAttempts; i++) {
+        await new Promise((res) => setTimeout(res, this.batchRetryDelayMs));
         try {
           await postJson(
             `${this.config.host}/v1/trace/batch`,
@@ -179,11 +194,11 @@ export class Langlite {
       if (!this.traceQueue.find((item) => item.trace.id === qt.trace.id)) {
         this.traceQueue.push(qt);
       }
-      if (qt.retries < MAX_EXPORT_RETRIES) {
+      if (qt.retries < this.maxExportRetries) {
         qt.retries++;
         const backoff = Math.min(
-          BASE_BACKOFF_MS * Math.pow(2, qt.retries - 1),
-          MAX_BACKOFF_MS,
+          this.baseBackoffMs * Math.pow(2, qt.retries - 1),
+          this.maxBackoffMs,
         );
         if (typeof console !== 'undefined' && console.warn) {
           console.warn(
@@ -201,7 +216,7 @@ export class Langlite {
       } else {
         if (typeof console !== 'undefined' && console.error) {
           console.error(
-            `[Langlite] Trace (id=${qt.trace.id}) dropped after ${MAX_EXPORT_RETRIES} retries.`,
+            `[Langlite] Trace (id=${qt.trace.id}) dropped after ${this.maxExportRetries} retries.`,
           );
         }
         this.traceQueue = this.traceQueue.filter(

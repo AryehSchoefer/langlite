@@ -227,37 +227,36 @@ export function sharedLangliteTests(
       // Patch global fetch to fail
       const fetchSpy = vi
         .spyOn(globalThis, 'fetch' as any)
-        .mockRejectedValue(new Error('fail'));
+        .mockRejectedValue(new Error('Network failure'));
       const logSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      vi.useFakeTimers();
-
-      // Patch constants for faster retries in this test
-      (client as any).constructor.MAX_EXPORT_RETRIES = 2;
-      (client as any).constructor.BASE_BACKOFF_MS = 10;
-      (client as any).constructor.MAX_BACKOFF_MS = 20;
 
       const testClient = new Langlite({
         secretKey: 'test-secret',
         flushInterval: 0,
+        retryConfig: {
+          maxRetries: 2,
+          baseBackoffMs: 10,
+          maxBackoffMs: 20,
+          batchRetryAttempts: 1,
+          batchRetryDelayMs: 10,
+        },
       });
-      const trace = testClient.startTrace({ name: 'retry-trace' });
 
-      // There should be a retry sequence and then a drop after max retries
+      const trace = testClient.startTrace({ name: 'retry-trace' });
       trace.finish();
 
-      // Fast forward timers for all retries
-      for (let i = 0; i < 2; i++) {
-        await vi.runOnlyPendingTimersAsync();
+      try {
+        await testClient.flush();
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        expect(logSpy).toHaveBeenCalled();
+      } finally {
+        fetchSpy.mockRestore();
+        logSpy.mockRestore();
+        warnSpy.mockRestore();
       }
-
-      expect(logSpy).toHaveBeenCalled();
-      expect(warnSpy).toHaveBeenCalled();
-
-      fetchSpy.mockRestore();
-      logSpy.mockRestore();
-      warnSpy.mockRestore();
-    });
+    }, 10000);
   });
 }

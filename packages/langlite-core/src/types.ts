@@ -19,6 +19,31 @@ export interface LangliteConfig {
    * If omitted, the default flush interval is used.
    */
   flushInterval?: number;
+  /**
+   * Configuration options for retry behavior when exports fail.
+   */
+  retryConfig?: {
+    /**
+     * Maximum number of retry attempts for failed exports (default: 5).
+     */
+    maxRetries?: number;
+    /**
+     * Base backoff time in milliseconds for exponential backoff (default: 1000).
+     */
+    baseBackoffMs?: number;
+    /**
+     * Maximum backoff time in milliseconds (default: 30000).
+     */
+    maxBackoffMs?: number;
+    /**
+     * Number of batch retry attempts before falling back to individual retries (default: 1).
+     */
+    batchRetryAttempts?: number;
+    /**
+     * Delay in milliseconds between batch retry attempts (default: 2000).
+     */
+    batchRetryDelayMs?: number;
+  };
 }
 
 /**
