@@ -47,7 +47,7 @@ export class Langlite {
     }
 
     this.config = {
-      host: 'https://api.langlite.io',
+      host: 'https://api.langlite.com',
       flushInterval: 10000, // default: 10 seconds
       ...config,
     };
