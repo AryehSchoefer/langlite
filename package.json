@@ -1,7 +1,6 @@
 {
   "name": "langlite",
   "version": "0.0.3",
-  "private": true,
   "description": "A lightweight, type-safe TypeScript SDK for observability and tracing in LLM and AI-powered applications. Batch, export, and analyze traces, generations, spans, events, and scores with ease in Node.js or browser environments.",
   "keywords": [
     "observability",
@@ -38,7 +37,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "build": "npm run build -w langlite-core && npm run build -w langlite-web && npm run build -w langlite-node",
+    "build": "npm run build -w langlite-core && npm run build -w langlite-node && npm run build -w langlite-web && tsup",
     "format": "npm run format --workspaces",
     "lint": "npm run lint --workspaces",
     "test": "npm run test --workspaces --if-present",
@@ -46,6 +45,7 @@
     "coverage": "vitest run --coverage",
     "check-format": "prettier --check .",
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
+    "release": "npm run build && changeset publish",
     "local-release": "changeset version && changeset publish",
     "ci": "npm run build && npm run check-format && npm run check-exports && npm run lint && npm run test",
     "prepublishOnly": "npm run ci"
@@ -60,7 +60,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "uuid": "^11.1.0"
+    "langlite-node": "0.0.1"
   },
   "main": "dist/index.js",
   "engines": {
