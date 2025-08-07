@@ -42,5 +42,7 @@
     "prepublishOnly": "npm run build && npm run check-format && npm run lint && npm run test"
   },
   "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "uuid": "^11.1.0"
+  }
 }
