@@ -1,6 +1,6 @@
 {
   "name": "langlite-core",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Platform-agnostic core logic and types for the Langlite SDK.",
   "keywords": [
     "observability",
