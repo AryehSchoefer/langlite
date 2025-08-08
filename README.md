@@ -17,6 +17,17 @@
 
 ---
 
+## Packages
+
+| Package                                   | NPM                                                                                                   | Description                                | Environments |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------------ |
+| [langlite](./packages/langlite-node)      | [![NPM](https://img.shields.io/npm/v/langlite.svg)](https://www.npmjs.com/package/langlite)           | Main Langlite SDK for Node.js applications | Node.js 18+  |
+| [langlite-web](./packages/langlite-web)   | [![NPM](https://img.shields.io/npm/v/langlite-web.svg)](https://www.npmjs.com/package/langlite-web)   | Browser-optimized Langlite SDK             | Browsers/Web |
+| [langlite-core](./packages/langlite-core) | [![NPM](https://img.shields.io/npm/v/langlite-core.svg)](https://www.npmjs.com/package/langlite-core) | Platform-agnostic core types and logic     | Universal JS |
+| [langlite-node](./packages/langlite-node) | [![NPM](https://img.shields.io/npm/v/langlite-node.svg)](https://www.npmjs.com/package/langlite-node) | Node.js-specific implementation (internal) | Node.js 18+  |
+
+---
+
 ## Installation
 
 ```sh
