@@ -1,6 +1,6 @@
 {
   "name": "langlite-web",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Browser/Edge implementation of the Langlite SDK, built on langlite-core.",
   "keywords": [
     "observability",
@@ -45,7 +45,7 @@
   },
   "devDependencies": {},
   "dependencies": {
-    "langlite-core": "0.0.1"
+    "langlite-core": "0.1.0"
   },
   "peerDependencies": {},
   "optionalDependencies": {}
