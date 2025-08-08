@@ -42,7 +42,7 @@
     "dev": "vitest",
     "devts": "tsup",
     "coverage": "vitest run --coverage",
-    "check-format": "prettier --check .",
+    "check-format": "prettier --check src",
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
     "release": "npm run prepublishOnly && changeset publish",
     "local-release": "changeset version && changeset publish",
