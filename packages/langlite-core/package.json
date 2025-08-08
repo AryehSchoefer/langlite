@@ -39,7 +39,7 @@
     "coverage": "vitest run --coverage",
     "check-format": "prettier --check src",
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
-    "prepublishOnly": "npm run build && npm run check-format && npm run lint && npm run test"
+    "prepublishOnly": "npm run build && npm run check-format && npm run lint && npm run test --if-present"
   },
   "devDependencies": {},
   "dependencies": {
